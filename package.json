@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "telegraf": "^4.12.2"
+  },
+  "name": "telegrambot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dmitry I.",
+  "license": "ISC",
+  "description": "Telegram bot - ToDo list."
+
+
+}

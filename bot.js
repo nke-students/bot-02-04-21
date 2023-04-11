@@ -24,7 +24,7 @@ class Todo {
 
 
 
-const bot = new Telegraf("5982807611:AAEi6De28PvpdcSTF8VS2Bsr4oHlBdFIe8s")
+const bot = new Telegraf(TOKENA NET DO SVYAZI)
 
 
 let isAdding = false;

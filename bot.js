@@ -41,7 +41,7 @@ const products = [];
 const temp = [];
 
 
-const bot = new Telegraf("5891318186:AAGn1UiNaKn5Rysg5aTtcIxpc3kMSsgbh98")
+const bot = new Telegraf("вставлять сюда")
 
 
 bot.start(ctx => ctx.reply("To add a new product, write /add and name of a product, on a new line the price of the product "

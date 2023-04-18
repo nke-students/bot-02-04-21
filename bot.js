@@ -1,288 +1,194 @@
 const { Telegraf } = require('telegraf');
 
-const users = [];
 
-class User {
-  constructor(id) {
+/// class product
+class Product {
+  constructor(name, price, description) {
 
-    this.id = id
-    this.todos = []
+    this.name = name
+    this.description = description
+    this.price = price
 
+  }
+
+  setDes(msg) {
+    this.description = msg
+  }
+
+  setPrice(msg) {
+    this.price = msg
+  }
+
+  setName(msg) {
+    this.name = msg
   }
 }
 
 
-class Todo {
-  constructor(data) {
+///global
+let isSelecting = false
+let isEditingPrice = false
+let isEditingName = false
+let isEditingDescription = false
 
-    this.data = data;
-    this.isDone = false;
-
-  }
-
-}
-
+let currentProduct = null
+const big_keyboard = [["Edit price", "Edit description", "Edit name"], ["Delete this product", "Back"]];
 
 
-const bot = new Telegraf(TOKENA NET DO SVYAZI)
+///lists
+const restricted = ['>', '<', '/'];
+const products = [];
+const temp = [];
 
 
-let isAdding = false;
-let isWrote = false;
-let isAlways = false;
-let isMarking = false;
-let currentUser = null;
+const bot = new Telegraf("5891318186:AAGn1UiNaKn5Rysg5aTtcIxpc3kMSsgbh98")
 
 
+bot.start(ctx => ctx.reply("To add a new product, write /add and name of a product, on a new line the price of the product "
+  + "and on another new line the description of the product."))
 
 
-bot.command('start', ctx => {
+bot.command('add', ctx => {
 
-  if (users.length != 0) {
-    let userExists = false
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].id == ctx.from.id) {
-        currentUser = users[i]
-        userExists = true
-        break
-      }
+  const arr = ctx.message.text.split('\n');
+  const temp_arr = arr[0].split(' ').slice(1)
+  const name = temp_arr.join(' ')
+  currentProduct = new Product(name, arr[1], arr[2])
+  products.push(currentProduct)
+
+
+  ctx.reply(`This is your product: \n ${currentProduct.name} \n <b>${currentProduct.price}</b> \n <i>${currentProduct.description} </i>`, {
+    parse_mode: 'HTML',
+    reply_markup: {
+      //keyboard: [["Edit price", "Edit description", "Edit name"], ["Delete this product"]],
+      keyboard: [["Show products"]],
+      resize_keyboard: true
     }
-    if (!userExists) {
-      currentUser = new User(ctx.from.id)
-      users.push(currentUser)
-    }
-  } else {
-    currentUser = new User(ctx.from.id)
-    users.push(currentUser)
-  }
+  })
+  console.log(products)
+})
 
 
-ctx.reply(`Hello, ${ctx.from.first_name}, let's make your ToDo list! Use this commands to learn more about me:\n\n<b>/admins - I'll give contacts of my developers\n/start - to see this message again</b>`, {
-  parse_mode: 'HTML',
-  reply_markup: {
-    keyboard: [["Add new"]],
-    one_time_keyboard: true,
-    resize_keyboard: true
-  }
-});
- });
+bot.hears("Show products", ctx => {
 
+  const arr = products.map((product, index) => {
+    return `${index + 1}. ${product.name}\n${product.description}\n${product.price}`
+  })
 
- bot.command('admins', ctx => {
-
-    ctx.reply("Contact with these cool guys:<b>\n\n@psnowik - Dmitry,\n@em0em0em04ka - Vadim,\n@nothingsignificant - Matvey.</b>", {parse_mode: 'HTML'})
-
- })
- 
-
-bot.hears("That's all for now", ctx => {
-
-  isAdding = false;
-  isWrote = false;
-
-
-  if (currentUser.todos.length != 0) {
-    isAlways = true
-    if (isAlways) {
-      try {
-
-        ctx.reply("Good, your ToDos now in your ToDo list :)\n\n<i>See an available buttons below</i>", {
-          parse_mode: 'HTML',
-          reply_markup: {
-            keyboard: [["Add new", "My ToDos"]],
-            resize_keyboard: true,
-            // one_time_keyboard: true
-          }
-        })
-
-      } catch (error) {
-
-        console.log(error)
-        ctx.reply("Sorry, unexpected error...")
-
-      }
-    }
-
-  } else {
-    ctx.reply("Please, add at least one ToDo")
-    isAdding = true;
-  }
-});
-
-
-bot.hears("My ToDos", ctx => {
-
-  if (currentUser.todos.length != 0 && currentUser.id == ctx.from.id) {
-    isAlways = false
-
-    const arr = currentUser.todos.map((todo, index) => {
-
-
-        return `${index + 1}. ${todo.data}`
-
-      
-    })
-
-
-
-
-    ctx.reply("There are your ToDos:\n\n" + arr.join('\n'), {
-
-      parse_mode: 'HTML',
-      reply_markup: {
-        keyboard: [["Delete all", "Mark as done"]],
-        resize_keyboard: true,
-        // one_time_keyboard: true
-      }
-    })
-
-  }
-  else {
-    ctx.reply("Your ToDo list is empty!")
-  }
-
-});
-
-
-bot.hears("Delete all", ctx => {
-  if (currentUser.todos.length != 0) {
-    currentUser.todos.length = 0
-    ctx.reply("Your ToDo list has been cleared", {
-
-      reply_markup: {
-        keyboard: [["Add new"]],
-        resize_keyboard: true,
-        one_time_keyboard: true
-      }
-    })
-  } else {
-    ctx.reply("Your ToDo list is empty!")
-  }
-
-});
-
-
-bot.hears("Mark as done", ctx => {
-
-  let counter = 0
-
-  currentUser.todos.forEach(todo => {
-    if (todo.isDone == true) {
-      counter++
+  ctx.reply("There are products:\n" + arr.join('\n\n'), {
+    parse_mode: 'HTML',
+    reply_markup: {
+      keyboard: [["Select product"]]
     }
   })
 
-  if (counter == currentUser.todos.length) {
+})
 
-    ctx.reply("All ToDos are done, relax")
-    ctx.replyWithPhoto('https://media.istockphoto.com/id/1412242969/photo/close-up-cute-cat-and-golden-retriever-dog-chilling-and-sleeping-together-on-dog-bed.jpg?b=1&s=170667a&w=0&k=20&c=-u-Hn-NK3NXN8c5z0OOTgeTDPw47OuSO14USMDMO1ys=')
 
-  } else {
+bot.hears("Select product", ctx => {
+  ctx.reply("Send a number of product that you want to edit")
+  isSelecting = true;
+})
 
-    ctx.reply("Enter a ToDo's number that you want to mark as done")
-    isMarking = true
-  }
 
+
+bot.hears("Back", ctx => {
+  currentProduct = null;
+  ctx.reply("You can select any product", {
+    parse_mode: 'HTML',
+    reply_markup: {
+      keyboard: [["Select product"]]
+    }
+  })
+})
+
+
+bot.hears("Edit price", ctx => {
+
+  ctx.reply("Send a new price for this product")
+  isEditingPrice = true
 
 
 })
 
 
+bot.hears("Edit name", ctx => {
 
-bot.hears("Add new", ctx => {
-  isAdding = true;
-  isWrote = false;
-  isAlways = false
-  ctx.reply("Write a new ToDo", {
-    reply_markup: {
-      keyboard: [["That's all for now"]],
-      resize_keyboard: true,
+  ctx.reply("Send a new name for this product")
+  isEditingName = true
 
-    }
-  })
-});
+})
+
+
+//bot.hears("Delete this product")
 
 
 bot.on('message', ctx => {
-  if (isAdding) {
-    currentUser.todos.push(new Todo(ctx.message.text));
-    console.log(currentUser.todos);
-    isWrote = true;
-    ctx.reply("Anything else?", {
-      reply_markup: {
-        keyboard: [["That's all for now"]],
-        resize_keyboard: true,
 
+  if (isSelecting) {
+    try {
+      if (Number(ctx.message.text)) {
+        const index = Number(ctx.message.text) - 1;
+        if (index + 1 > products.length || index + 1 < products.length) {
+          ctx.reply("Incorrect input, try again")
+        } else {
+          currentProduct = products[index];
+
+          console.table(currentProduct)
+          isSelecting = false
+          ctx.reply(`You've chosen ${index + 1} product`, {
+            parse_mode: 'HTML',
+            reply_markup: {
+              keyboard: big_keyboard,
+              resize_keyboard: true,
+              one_time_keyboard: false
+            }
+          })
+          isSelecting = false
+        }
+      } else {
+        ctx.reply("Incorrect input!")
+        isSelecting = true
+      }
+    }
+    catch {
+      ctx.reply("Unexpected error...")
+    }
+  }
+
+  if (isEditingPrice) {
+    if (Number(ctx.message.text) && Number(ctx.message.text) >= 0) {
+      currentProduct.setPrice(ctx.message.text)
+      ctx.reply("Price was updated!",)
+      isEditingPrice = false
+    } else {
+      ctx.reply("Incorrect input, try again")
+      isEditingPrice = true
+    }
+  }
+
+  if (isEditingName) {
+    let isIncorrect = false
+    const check = ctx.message.text.split('');
+
+    check.forEach( char => {
+      if (restricted.includes(char)) {
+        isIncorrect = true
       }
     })
-  }
 
-  if (isMarking) {
+    if (!isIncorrect) {
 
-    if (!Number(ctx.message.text)) {
-      ctx.reply("Please, enter the ToDo's number that you want to mark as done")
+      currentProduct.setName(ctx.message.text)
+      ctx.reply("Name was updated!",)
+      isEditingName = false
     } else {
-
-
-      let index = Number(ctx.message.text);
-      currentUser.todos.forEach(todo => {
-
-
-
-        if (currentUser.todos.indexOf(todo) == index - 1) {
-          todo.data = `<s>${todo.data}</s>`
-          todo.isDone = true
-        }
-
-
-      })
-
-      const arr = currentUser.todos.map((todo, index) => {
-
-          return `${index + 1}. ${todo.data}`
-
-        
-      })
-
-      ctx.reply("There are your ToDos:\n\n" + arr.join('\n'), {
-        parse_mode: 'HTML',
-        reply_markup: {
-          keyboard: [["Add new", "Delete all", "Mark as done"]],
-          resize_keyboard: true,
-          one_time_keyboard: false
-        }
-      })
+      ctx.reply("Name has restricted symbols")
+      isIncorrect = false
     }
-
-    isMarking = false
-    console.log(currentUser.todos)
-  }
-
-
-
-    if (users.length != 0) {
-      let userExists = false
-      for (let i = 0; i < users.length; i++) {
-        if (users[i].id == ctx.from.id) {
-          currentUser = users[i]
-          userExists = true
-          break
-        }
-      }
-      if (!userExists) {
-        currentUser = new User(ctx.from.id)
-        users.push(currentUser)
-      }
-    } else {
-      currentUser = new User(ctx.from.id)
-      users.push(currentUser)
     }
   
-  console.log(currentUser.id)
 
-
-
-});
-
+})
 
 bot.launch();
